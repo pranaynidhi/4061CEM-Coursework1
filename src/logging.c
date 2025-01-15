@@ -1,7 +1,7 @@
 #include "logging.h"
 #include <stdio.h>
-#include <time.h>     // For timestamp generation
-#include <sys/stat.h> // For mkdir function
+#include <time.h>
+#include <sys/stat.h>
 
 static char log_file_path[256];
 
@@ -21,7 +21,7 @@ void setup_log_file()
     printf("Logs will be saved in: %s\n", log_file_path);
 }
 
-void log_event(const char *event)
+void log_event(const char *event, const char *severity)
 {
     FILE *file = fopen(log_file_path, "a");
     if (!file)
@@ -31,7 +31,7 @@ void log_event(const char *event)
     }
     time_t now = time(NULL);
     struct tm *t = localtime(&now);
-    fprintf(file, "[%04d-%02d-%02d %02d:%02d:%02d] %s\n",
-            t->tm_year + 1900, t->tm_mon + 1, t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec, event);
+    fprintf(file, "[%04d-%02d-%02d %02d:%02d:%02d] [%s] %s\n",
+            t->tm_year + 1900, t->tm_mon + 1, t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec, severity, event);
     fclose(file);
 }
