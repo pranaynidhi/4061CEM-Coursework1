@@ -63,32 +63,6 @@ void detect_sequential_scan(const char *src_ip, int dst_port)
             char alert[256];
             snprintf(alert, sizeof(alert), "Sequential port scan detected from %s", src_ip);
             printf("ALERT: %s\n", alert);
-            log_event(alert, "INFO");
-            sequential_count = 0; // Reset after alert
-        }
-    }
-    else
-    {
-        sequential_count = 1;
-    }
-    strncpy(last_ip, src_ip, INET_ADDRSTRLEN);
-    last_port = dst_port;
-}
-
-void detect_sequential_scan(const char *src_ip, int dst_port)
-{
-    static int last_port = 0;
-    static char last_ip[INET_ADDRSTRLEN] = "";
-    static int sequential_count = 0;
-
-    if (strcmp(src_ip, last_ip) == 0 && dst_port == last_port + 1)
-    {
-        sequential_count++;
-        if (sequential_count >= 5)
-        {
-            char alert[256];
-            snprintf(alert, sizeof(alert), "Sequential port scan detected from %s", src_ip);
-            printf("ALERT: %s\n", alert);
             log_event(alert, "HIGH");
             sequential_count = 0;
         }
