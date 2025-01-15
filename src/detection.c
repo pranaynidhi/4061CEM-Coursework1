@@ -14,27 +14,62 @@
 void detect_geolocation(const char *src_ip)
 {
     MMDB_s mmdb;
-    if (MMDB_open("GeoLite2-City.mmdb", MMDB_MODE_MMAP, &mmdb) != MMDB_SUCCESS)
+    int status = MMDB_open("GeoLite2-City.mmdb", MMDB_MODE_MMAP, &mmdb);
+    if (status != MMDB_SUCCESS)
     {
-        fprintf(stderr, "Failed to open GeoLite2 database.\n");
+        fprintf(stderr, "Failed to open GeoLite2 database: %s\n", MMDB_strerror(status));
         return;
     }
 
-    MMDB_lookup_result_s result = MMDB_lookup_string(&mmdb, src_ip, NULL, NULL);
+    int gai_error, mmdb_error;
+    MMDB_lookup_result_s result = MMDB_lookup_string(&mmdb, src_ip, &gai_error, &mmdb_error);
+    if (gai_error != 0)
+    {
+        fprintf(stderr, "Error from getaddrinfo for %s: %s\n", src_ip, gai_strerror(gai_error));
+        MMDB_close(&mmdb);
+        return;
+    }
+    if (mmdb_error != MMDB_SUCCESS)
+    {
+        fprintf(stderr, "Error from libmaxminddb: %s\n", MMDB_strerror(mmdb_error));
+        MMDB_close(&mmdb);
+        return;
+    }
+
     if (result.found_entry)
     {
         MMDB_entry_data_s entry_data;
         if (MMDB_get_value(&result.entry, &entry_data, "country", "names", "en", NULL) == MMDB_SUCCESS)
         {
-            printf("Traffic from %s: %s\n", src_ip, entry_data.utf8_string);
-            if (strcmp(entry_data.utf8_string, "SuspiciousCountry") == 0)
+            if (entry_data.has_data)
             {
-                char alert[256];
-                snprintf(alert, sizeof(alert), "Traffic from suspicious country (%s): %s", entry_data.utf8_string, src_ip);
-                log_event(alert, "");
+                printf("Traffic from %s: %.*s\n", src_ip, entry_data.data_size, entry_data.utf8_string);
+                char log_message[256];
+                snprintf(log_message, sizeof(log_message), "Traffic from %s: %.*s", src_ip, entry_data.data_size, entry_data.utf8_string);
+                log_event(log_message, "INFO");
+
+                if (strncmp(entry_data.utf8_string, "SuspiciousCountry", entry_data.data_size) == 0)
+                {
+                    // Add logic for handling traffic from suspicious countries
+                    snprintf(log_message, sizeof(log_message), "Suspicious traffic detected from %.*s (IP: %s)", entry_data.data_size, entry_data.utf8_string, src_ip);
+                    log_event(log_message, "HIGH");
+                }
+            }
+            else
+            {
+                fprintf(stderr, "No valid country name found for IP: %s\n", src_ip);
             }
         }
+        else
+        {
+            fprintf(stderr, "Failed to get country name for IP: %s\n", src_ip);
+        }
     }
+    else
+    {
+        fprintf(stderr, "No entry found for IP: %s\n", src_ip);
+    }
+
     MMDB_close(&mmdb);
 }
 
@@ -120,6 +155,31 @@ int is_blacklisted(const char *ip)
             return 1;
         }
     }
+    return 0;
+}
+
+void add_to_whitelist(const char *ip)
+{
+    if (whitelist_size < MAX_ENTRIES)
+    {
+        strncpy(whitelist[whitelist_size], ip, INET_ADDRSTRLEN);
+        whitelist_size++;
+        char message[256];
+        snprintf(message, sizeof(message), "Added to whitelist: %s", ip);
+        log_event(message, "CONFIG");
+    }
+}
+
+void add_to_blacklist(const char *ip)
+{
+    if (blacklist_size < MAX_ENTRIES)
+    {
+        strncpy(blacklist[blacklist_size], ip, INET_ADDRSTRLEN);
+        blacklist_size++;
+        char message[256];
+        snprintf(message, sizeof(message), "Added to blacklist: %s", ip);
+        log_event(message, "CONFIG");
+    }
 }
 
 #define SYN_THRESHOLD 10
@@ -161,30 +221,6 @@ void detect_syn_flood(const char *src_ip)
         syn_table[syn_table_size].syn_count = 1;
         syn_table[syn_table_size].last_syn_time = now;
         syn_table_size++;
-    }
-}
-
-void add_to_whitelist(const char *ip)
-{
-    if (whitelist_size < MAX_ENTRIES)
-    {
-        strncpy(whitelist[whitelist_size], ip, INET_ADDRSTRLEN);
-        whitelist_size++;
-        char message[256];
-        snprintf(message, sizeof(message), "Added to whitelist: %s", ip);
-        log_event(message, "CONFIG");
-    }
-}
-
-void add_to_blacklist(const char *ip)
-{
-    if (blacklist_size < MAX_ENTRIES)
-    {
-        strncpy(blacklist[blacklist_size], ip, INET_ADDRSTRLEN);
-        blacklist_size++;
-        char message[256];
-        snprintf(message, sizeof(message), "Added to blacklist: %s", ip);
-        log_event(message, "CONFIG");
     }
 }
 

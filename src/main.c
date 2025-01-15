@@ -3,10 +3,19 @@
 #include <stdio.h>
 #include <string.h>
 
-int main()
+int main(int argc, char *argv[])
 {
     char command[100];
-    const char *interface = "wlan0"; // Replace with actual interface
+    const char *interface;
+
+    if (argc > 1)
+    {
+        interface = argv[1];
+    }
+    else
+    {
+        interface = "wlan0"; // Default interface
+    }
 
     printf("Welcome to the Basic IDS. Type 'start' to begin or 'exit' to quit.\n");
     while (1)

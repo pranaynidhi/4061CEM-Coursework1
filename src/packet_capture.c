@@ -62,7 +62,7 @@ void packet_handler(unsigned char *args, const struct pcap_pkthdr *header, const
 
         if (ip_header->ip_p == IPPROTO_UDP)
         {
-            struct udphdr *udp_header = (struct udphdr *)(packet + sizeof(struct ether_header) + sizeof(struct ip));
+            struct udphdr *udp_header = (struct udphdr *)(packet + sizeof(struct ether_header) + (ip_header->ip_hl * 4));
             // Add UDP-specific detection logic if needed
         }
     }
@@ -92,6 +92,7 @@ void start_packet_capture(const char *interface)
         FD_SET(STDIN_FILENO, &readfds);
         struct timeval timeout = {1, 0};
 
+        printf("Waiting for input or packet...\n");
         int result = select(STDIN_FILENO + 1, &readfds, NULL, NULL, &timeout);
         if (result > 0 && FD_ISSET(STDIN_FILENO, &readfds))
         {
@@ -104,7 +105,13 @@ void start_packet_capture(const char *interface)
             }
         }
 
-        pcap_dispatch(handle, 1, packet_handler, NULL);
+        printf("Dispatching packet...\n");
+        int dispatch_result = pcap_dispatch(handle, 1, packet_handler, NULL);
+        if (dispatch_result == -1)
+        {
+            fprintf(stderr, "Error dispatching packet: %s\n", pcap_geterr(handle));
+            break;
+        }
     }
     disable_raw_mode();
     pcap_close(handle);

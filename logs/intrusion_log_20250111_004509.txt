@@ -1,6 +1,0 @@
-[2025-01-11 00:45:10] Packet captured: Src IP: 35.207.214.21, Dst IP: 192.168.1.72, Length: 84
-[2025-01-11 00:45:11] Packet captured: Src IP: 35.207.214.21, Dst IP: 192.168.1.72, Length: 88
-[2025-01-11 00:45:12] Packet captured: Src IP: 192.168.1.72, Dst IP: 35.207.214.21, Length: 151
-[2025-01-11 00:45:13] Packet captured: Src IP: 192.168.1.72, Dst IP: 35.207.214.21, Length: 112
-[2025-01-11 00:45:14] Packet captured: Src IP: 192.168.1.72, Dst IP: 35.207.214.21, Length: 77
-[2025-01-11 00:45:15] Packet captured: Src IP: 35.207.214.21, Dst IP: 192.168.1.72, Length: 84

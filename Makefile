@@ -1,6 +1,6 @@
 CC = gcc
 CFLAGS = -Iinclude
-LDFLAGS = -lpcap
+LDFLAGS = -lpcap -lmaxminddb
 SRCS = src/main.c src/packet_capture.c src/detection.c src/logging.c
 OBJS = $(SRCS:.c=.o)
 EXEC = ids
@@ -11,4 +11,5 @@ $(EXEC): $(OBJS)
 	$(CC) $(OBJS) -o $@ $(LDFLAGS)
 
 clean:
-	rm -f $(OBJS) $(EXEC)
+	find . -name "*.o" -type f -delete
+	rm -f $(EXEC)
