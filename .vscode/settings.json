@@ -1,6 +1,0 @@
-{
-  "makefile.configureOnOpen": false,
-  "files.associations": {
-    "maxminddb.h": "c"
-  }
-}
