@@ -14,11 +14,11 @@ This project is part of my coursework for Programming and Algorithms 1. It detec
 ## Installation
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/basic-ids.git
+   git clone https://github.com/pranaynidhi/4061CEM-Coursework1.git
    ```
 2. Navigate to the project directory:
    ```bash
-   cd basic-ids
+   cd 4061CEM-Coursework1
    ```
 3. Compile the project:
    ```bash
