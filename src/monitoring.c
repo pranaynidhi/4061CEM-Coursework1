@@ -4,7 +4,8 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-void start_monitoring(const char *interface) {
+void start_monitoring(const char *interface)
+{
     // Initialize ncurses
     initscr();
     cbreak();
@@ -26,7 +27,8 @@ void start_monitoring(const char *interface) {
     int alerts_triggered = 0;
 
     // Real-time loop
-    while (1) {
+    while (1)
+    {
         // Simulate data updates (replace this with actual stats from your program)
         packets_captured += rand() % 10;
         alerts_triggered += rand() % 2;
@@ -44,7 +46,8 @@ void start_monitoring(const char *interface) {
         // Check for user input
         timeout(500); // 500ms timeout
         int ch = getch();
-        if (ch == 'q') {
+        if (ch == 'q')
+        {
             break;
         }
     }
